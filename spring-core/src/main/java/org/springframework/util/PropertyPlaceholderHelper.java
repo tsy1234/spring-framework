@@ -129,6 +129,7 @@ public class PropertyPlaceholderHelper {
 	protected String parseStringValue(
 			String value, PlaceholderResolver placeholderResolver, @Nullable Set<String> visitedPlaceholders) {
 
+		// "${"下标位置
 		int startIndex = value.indexOf(this.placeholderPrefix);
 		if (startIndex == -1) {
 			return value;
@@ -192,6 +193,7 @@ public class PropertyPlaceholderHelper {
 	private int findPlaceholderEndIndex(CharSequence buf, int startIndex) {
 		int index = startIndex + this.placeholderPrefix.length();
 		int withinNestedPlaceholder = 0;
+		// 从前缀后第一个位置开始 找"}"后缀
 		while (index < buf.length()) {
 			if (StringUtils.substringMatch(buf, index, this.placeholderSuffix)) {
 				if (withinNestedPlaceholder > 0) {

@@ -82,6 +82,9 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @throws BeansException if context creation failed
 	 */
 	public ClassPathXmlApplicationContext(String configLocation) throws BeansException {
+		/**
+		 * TODO 这里只传入一个string 为什么用一个数组包起来 有意义吗
+		 */
 		this(new String[] {configLocation}, true, null);
 	}
 
@@ -140,7 +143,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 
 		super(parent);
 		setConfigLocations(configLocations);
-		if (refresh) {
+		if (refresh) { // 自动更新上下文容器
 			refresh();
 		}
 	}

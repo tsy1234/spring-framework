@@ -56,6 +56,10 @@ import org.springframework.util.StringValueResolver;
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.context.support.AbstractApplicationContext#refresh()
  */
+
+/**
+ * 为所有添加..Aware接口的bean进行某特定属性注入 在bean实例化前注入
+ */
 class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
 	private final ConfigurableApplicationContext applicationContext;

@@ -100,7 +100,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 	 */
 	protected final synchronized AopProxy createAopProxy() {
 		if (!this.active) {
-			activate();
+			activate(); // 激活事件监听
 		}
 		return getAopProxyFactory().createAopProxy(this);
 	}
@@ -122,7 +122,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 	 */
 	@Override
 	protected void adviceChanged() {
-		super.adviceChanged();
+		super.adviceChanged(); // 事件监听器 监听advice增强的激活与改变
 		synchronized (this) {
 			if (this.active) {
 				for (AdvisedSupportListener listener : this.listeners) {
