@@ -273,7 +273,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
-			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+			Set<BeanDefinition> candidates = findCandidateComponents(basePackage); // 获取到该包下所有候选组件
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
@@ -284,7 +284,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				if (candidate instanceof AnnotatedBeanDefinition) {
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
-				if (checkCandidate(beanName, candidate)) {
+				if (checkCandidate(beanName, candidate)) { // 未存在的beanDefinition 注册
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
@@ -336,7 +336,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		if (!this.registry.containsBeanDefinition(beanName)) {
 			return true;
 		}
-		BeanDefinition existingDef = this.registry.getBeanDefinition(beanName);
+		BeanDefinition existingDef = this.registry.getBeanDefinition(beanName); // 具有重名的definitionf
 		BeanDefinition originatingDef = existingDef.getOriginatingBeanDefinition();
 		if (originatingDef != null) {
 			existingDef = originatingDef;
@@ -354,6 +354,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * the given existing bean definition.
 	 * <p>The default implementation considers them as compatible when the existing
 	 * bean definition comes from the same source or from a non-scanning source.
+	 *
+	 * 判断两个重名的definition是否兼容 主要是根据shi8fou来自同样的source
+	 *
 	 * @param newDefinition the new bean definition, originated from scanning
 	 * @param existingDefinition the existing bean definition, potentially an
 	 * explicitly defined one or a previously generated one from scanning

@@ -412,7 +412,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		}
 		return candidates;
 	}
-
+	//  扫描包下所有候选Component
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
@@ -490,7 +490,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				return false;
 			}
 		}
-		for (TypeFilter tf : this.includeFilters) {
+		for (TypeFilter tf : this.includeFilters) { // 为什么只要@component 其他的service 什么的不行吗
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return isConditionMatch(metadataReader);
 			}

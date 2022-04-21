@@ -948,7 +948,7 @@ public abstract class ClassUtils {
 	public static String getShortName(String className) {
 		Assert.hasLength(className, "Class name must not be empty");
 		int lastDotIndex = className.lastIndexOf(PACKAGE_SEPARATOR);
-		int nameEndIndex = className.indexOf(CGLIB_CLASS_SEPARATOR);
+		int nameEndIndex = className.indexOf(CGLIB_CLASS_SEPARATOR); // 注意处理一下cglib生成的代理类
 		if (nameEndIndex == -1) {
 			nameEndIndex = className.length();
 		}

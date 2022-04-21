@@ -124,10 +124,10 @@ abstract class ConfigurationClassUtils {
 
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
-			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
+			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL); // Full模式的配置类 有@Configuration注解
 		}
 		else if (config != null || isConfigurationCandidate(metadata)) {
-			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
+			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE); // Lite模式配置类 见isConfigurationCandidate内部代码
 		}
 		else {
 			return false;
@@ -156,6 +156,14 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Any of the typical annotations found?
+		/**
+		 * 这里判断Lite模式的配置类 重要
+		 * @Component
+		 * @ComponentScan
+		 * @Import
+		 * @ImportResource
+		 * 这四种都有可能是构造类 （不是一定要要@Configuration Full模式和Lite模式）
+		 */
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;
@@ -163,6 +171,9 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Finally, let's look for @Bean methods...
+		/**
+		 * 最后查看是否有@Bean注解的方法
+		 */
 		return hasBeanMethods(metadata);
 	}
 
