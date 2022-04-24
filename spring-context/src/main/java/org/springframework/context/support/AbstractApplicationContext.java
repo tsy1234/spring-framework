@@ -545,13 +545,21 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		// refresh与destroy并发
 		synchronized (this.startupShutdownMonitor) {
+			/**
+			 * 前戏 做容器刷新前的准备工作
+			 * 1. 设置容器的启动时间
+			 * 2. 设置活跃状态为true
+			 * 3. 设置关闭状态为false
+			 * 4. 获取Enviroment对象 并加载当前系统的属性值到Enviroment中
+			 * 5. 准备监听器和事件的集合对象
+			 */
 			StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
 
 			// Prepare this context for refreshing.
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 创建一个IOC容器
+			// 创建一个IOC容器 加载beanDefinition
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context. 获取新的beanFactory 设置属性
@@ -586,10 +594,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Check for listener beans and register them. 注册监听器
 				registerListeners();
 
-				// Instantiate all remaining (non-lazy-init) singletons. 初始化所有非懒加载的bean
+				// Instantiate all remaining (non-lazy-init) singletons.
+				// 实例化剩下的单例（非懒加载） bean生命周期（进行bean对象的创建工作）
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 完成刷新过程 通知生命周期处理器lifecycleprocessor刷新过程 同时发出ContextRefreshEvent事件通知
 				finishRefresh();
 			}
 
@@ -900,13 +910,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * initializing all remaining singleton beans.
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
-		// Initialize conversion service for this context.
+		// Initialize conversion service for this context. 为上下文初始化类型转换器
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
 					beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));
 		}
-
+		// 注册嵌入值解析器 主要用于注解属性值的解析
 		// Register a default embedded value resolver if no BeanFactoryPostProcessor
 		// (such as a PropertySourcesPlaceholderConfigurer bean) registered any before:
 		// at this point, primarily for resolution in annotation attribute values.
@@ -920,13 +930,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			getBean(weaverAwareName);
 		}
 
-		// Stop using the temporary ClassLoader for type matching.
+		// Stop using the temporary ClassLoader for type matching. 禁止使用临时类加载器进行类型匹配
 		beanFactory.setTempClassLoader(null);
 
-		// Allow for caching all bean definition metadata, not expecting further changes.
+		// Allow for caching all bean definition metadata, not expecting further changes. 冻结所有的bean定义 说明注册的bean定义将不被修改或任何进一步的处理
 		beanFactory.freezeConfiguration();
 
-		// Instantiate all remaining (non-lazy-init) singletons.
+		// Instantiate all remaining (non-lazy-init) singletons. 实例化剩下的单例对象
 		beanFactory.preInstantiateSingletons();
 	}
 

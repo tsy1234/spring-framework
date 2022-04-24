@@ -634,7 +634,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			super(field, null);
 			this.required = required;
 		}
-
+		// @Autowired属性注入
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;

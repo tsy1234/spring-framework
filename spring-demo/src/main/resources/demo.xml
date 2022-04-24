@@ -7,4 +7,12 @@
 		<property name="name" value="johnny"/>
 		<property name="age" value="10"/>
 	</bean>
+
+	<bean class="siyu.circulardependency.CircularA" id="circularA" >
+		<property name="circularB" ref="circularB" />
+	</bean>
+
+	<bean class="siyu.circulardependency.CircularB" id="circularB">
+		<property name="circularA" ref="circularA" />
+	</bean>
 </beans>
