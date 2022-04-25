@@ -422,6 +422,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
+			// 代理 AnnotationAwareAspectJAutoProxyCreator这个没重写postProcessBeforeInitialization
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -601,7 +602,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		try { // 对bean的属性进行填充 其中可能存在依赖于其他bean的属性 这样会递归初始化依赖的bean
 			populateBean(beanName, mbd, instanceWrapper);
-			exposedObject = initializeBean(beanName, exposedObject, mbd); // 执行初始化逻辑 正常对象代理在这里面
+			exposedObject = initializeBean(beanName, exposedObject, mbd); // 执行初始化逻辑 正常aop对象代理在这里面
 		}
 		catch (Throwable ex) {
 			if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
@@ -957,6 +958,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Obtain a reference for early access to the specified bean,
 	 * typically for the purpose of resolving a circular reference.
+	 *
+	 * 在第三级缓存中通过该接口进行循环依赖中的aop代理
+	 * 因为正常aop代理的处理是在initializedBean中 是在更后面的
+	 * 但是在循环依赖时需要提前暴露代理对象 等不到在后面initializedBean中去做代理 所以这里通过
+	 * 第三级缓存提前进行了aop代理的实现 让在属性赋值时曝光的对象就是完整的功能对象
+	 *
 	 * @param beanName the name of the bean (for error handling purposes)
 	 * @param mbd the merged bean definition for the bean
 	 * @param bean the raw bean instance
@@ -1769,15 +1776,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #applyBeanPostProcessorsAfterInitialization
 	 */
 	protected Object initializeBean(String beanName, Object bean, @Nullable RootBeanDefinition mbd) {
-		invokeAwareMethods(beanName, bean);
+		invokeAwareMethods(beanName, bean); // aware接口
 
 		Object wrappedBean = bean;
-		if (mbd == null || !mbd.isSynthetic()) {
+		if (mbd == null || !mbd.isSynthetic()) { // isSynthetic: aop切面
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
-			invokeInitMethods(beanName, wrappedBean, mbd);
+			invokeInitMethods(beanName, wrappedBean, mbd); // init-method调用
 		}
 		catch (Throwable ex) {
 			throw new BeanCreationException(

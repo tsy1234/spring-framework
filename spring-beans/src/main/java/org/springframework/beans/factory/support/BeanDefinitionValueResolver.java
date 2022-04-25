@@ -105,7 +105,7 @@ class BeanDefinitionValueResolver {
 	 * @param value the value object to resolve
 	 * @return the resolved object
 	 */
-	@Nullable // TODO @Value好像不会进这里
+	@Nullable // TODO @Value好像不会进这里 在之前的postProcessor进行处理
 	public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
 		// We must check each value to see whether it requires a runtime reference
 		// to another bean to be resolved.
