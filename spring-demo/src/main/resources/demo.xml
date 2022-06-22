@@ -9,10 +9,11 @@
                            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
                             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
+<context:property-placeholder location="personConfig.properties" />
 
 <bean class="bean.Person" id="person">
-		<property name="name" value="johnny"/>
-		<property name="age" value="10"/>
+		<property name="name" value="${person.name}"/>
+		<property name="age" value="${person.age}"/>
 	</bean>
 
 	<bean class="siyu.circulardependency.CircularA" id="circularA" >
