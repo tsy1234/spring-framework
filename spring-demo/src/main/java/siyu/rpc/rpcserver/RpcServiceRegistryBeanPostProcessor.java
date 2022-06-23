@@ -20,7 +20,7 @@ public class RpcServiceRegistryBeanPostProcessor implements BeanPostProcessor {
 		if (bean.getClass().isAnnotationPresent(RpcService.class)) {
 
 			// 1.拿到RpcService uniqueId
-			RpcService rpcServiceAnnotation = (RpcService) bean.getClass().getAnnotation(RpcService.class);
+			RpcService rpcServiceAnnotation = bean.getClass().getAnnotation(RpcService.class);
 			String uniqueId = rpcServiceAnnotation.uniqueId();
 
 			if (uniqueId.isEmpty()) {
@@ -28,7 +28,8 @@ public class RpcServiceRegistryBeanPostProcessor implements BeanPostProcessor {
 				uniqueId = beanName;
 			}
 
-			// TODO uniqueId -> bean映射配置到Mediator.ROUTER中
+			// uniqueId -> bean映射配置到Mediator.ROUTER中
+			Mediator.ROUTER.put(uniqueId, bean);
 
 		}
 		return bean;
