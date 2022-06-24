@@ -70,7 +70,7 @@ public class RpcReferenceInjectBeanFactoryPostProcessor implements BeanFactoryPo
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RpcReferenceBean.class);
 		builder.setInitMethodName("init");
 		builder.addPropertyValue("type", field.getType());
-		builder.addPropertyReference("uniqueId", annotation.uniqueId()); // 记得传入uniqueId
+		builder.addPropertyValue("uniqueId", annotation.uniqueId()); // 记得传入uniqueId
 
 		BeanDefinition beanDefinition = builder.getBeanDefinition();
 
@@ -93,7 +93,7 @@ public class RpcReferenceInjectBeanFactoryPostProcessor implements BeanFactoryPo
 
 		this.registry.registerBeanDefinition(beanName, beanDefinition);
 
-		System.out.printf("beanName为{0}的RpcReference服务注册definition成功%n", beanName);
+		System.out.printf("beanName为 %s 的RpcReference服务注册definition成功%n", beanName);
 
 	}
 }

@@ -25,7 +25,7 @@ public class RpcReferenceBean implements FactoryBean<Object> {
 	 */
 	private void init() {
 		this.object = Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, new RpcReferenceInvocationHandler(uniqueId));
-		System.out.println("[RpcReferenceBean::init] RpcReference 代理对象已生成");
+		System.out.printf("[RpcReferenceBean::init] 服务 %s 代理对象已生成%n", uniqueId);
 	}
 
 	@Override
@@ -59,5 +59,14 @@ public class RpcReferenceBean implements FactoryBean<Object> {
 	 */
 	public void setType(Class<?> type) {
 		this.type = type;
+	}
+
+	/**
+	 * Setter method for property <tt>uniqueId</tt>.
+	 *
+	 * @param uniqueId value to be assigned to property uniqueId
+	 */
+	public void setUniqueId(String uniqueId) {
+		this.uniqueId = uniqueId;
 	}
 }
