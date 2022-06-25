@@ -174,6 +174,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
 		try {
 			listener.onApplicationEvent(event);
+			System.out.println("listen over");
 		}
 		catch (ClassCastException ex) {
 			String msg = ex.getMessage();

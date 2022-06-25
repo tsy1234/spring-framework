@@ -36,6 +36,6 @@ public class RpcReferenceInvocationHandler implements InvocationHandler {
 		request.setArgs(args);
 		request.setArgsType(method.getParameterTypes());
 
-		return RpcNetTransport.send(request, "localhost", 8888);
+		return RpcNetTransport.send(request, "127.0.0.1", 8888);
 	}
 }

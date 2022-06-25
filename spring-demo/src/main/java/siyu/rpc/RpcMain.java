@@ -15,8 +15,8 @@ public class RpcMain {
 
 	public static void main(String[] args) {
 		ApplicationContext context = new AnnotationConfigApplicationContext(RpcMain.class);
-		// PersonService studentService = (StudentServiceImpl) context.getBean("studentService");
-		// System.out.println(studentService.hello());
-		for (String name: context.getBeanDefinitionNames()) System.out.println(name);
+		 PersonService studentService = (StudentServiceImpl) context.getBean("studentService");
+		 System.out.println(studentService.hello());
+		// for (String name: context.getBeanDefinitionNames()) System.out.println(name);
 	}
 }
