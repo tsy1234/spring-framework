@@ -73,7 +73,7 @@ final class PostProcessorRegistrationDelegate {
 
 		// Invoke  BeanDefinitionRegistryPostProcessors first, if any.
 		Set<String> processedBeans = new HashSet<>();
-		// 这里instanceof 是什么用法啊 后面接了个registry
+		// 这里instanceof 是什么用法啊 后面接了个registry ans: 就是用registry代替了beanFactory
 		if (beanFactory instanceof BeanDefinitionRegistry registry) {
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
@@ -89,40 +89,63 @@ final class PostProcessorRegistrationDelegate {
 				}
 			}
 
+			// 这里不要初始化FactoryBeans 让bean factory post-processors先应用在这些常规bean上
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the bean factory post-processors apply to them!
+			// 区分不同实现类的beanFactoryPostProcessors
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
+			/**
+			 * 下面就开始对 BeanDefinitionRegistryPostProcessor 按顺序(PriorityOrdered, Ordered)执行了
+			 */
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
+			/**
+			 * 这里拿到所有的 BeanDefinitionRegistryPostProcessor 类型的 Bean 名称
+			 * @Component这些注解还没有被扫描进 IOC 中
+			 */
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-					processedBeans.add(ppName);
+					processedBeans.add(ppName); // 标记当前bean已经被处理
 				}
 			}
+			// 这里对 BeanDefinitionRegistryPostProcessor 再排序,默认规则是根据 order
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
+			/**
+			 * 这里调用 BeanDefinitionRegistryPostProcessor 的 postProcessBeanDefinitionRegistry 方法。
+			 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 			currentRegistryProcessors.clear();
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
+			/**
+			 * 这边再获取 BeanDefinitionRegistryPostProcessor 类型的 Bean 名称，为什么这里还是要再获取而不用上面的呢，
+			 * 考虑到上面调用的 postProcessBeanDefinitionRegistry 方法会注册进新的 BeanDefinitionRegistryPostProcessor
+			 *
+			 */
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
-				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
+				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) { // 上一轮未处理过并且实现了Ordered接口
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
 			}
+			// 还是排序
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
+			// 继续调用调用 BeanDefinitionRegistryPostProcessor 的 postProcessBeanDefinitionRegistry 方法
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 			currentRegistryProcessors.clear();
 
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
+			/**
+			 * 接下来就是处理第二轮新注册的 BeanDefinitionRegistryPostProcessor 了
+			 */
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
@@ -131,9 +154,12 @@ final class PostProcessorRegistrationDelegate {
 					if (!processedBeans.contains(ppName)) {
 						currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 						processedBeans.add(ppName);
+						// 这里做这个标识是防止在 postProcessBeanDefinitionRegistry 中新注册了 BeanDefinitionRegistryPostProcessor 进来而没有被执行到。
+						// 所以说就是循环处理，直到没有新的BeanDefinitionRegistryPostProcessor被注册
 						reiterate = true;
 					}
 				}
+				// 下面也是一直循环再来一次 直到没有新的BeanDefinitionRegistryPostProcessor
 				sortPostProcessors(currentRegistryProcessors, beanFactory);
 				registryProcessors.addAll(currentRegistryProcessors);
 				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
@@ -152,6 +178,11 @@ final class PostProcessorRegistrationDelegate {
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
+		/**
+		 * 这边的话拿到所有的 BeanFactoryPostProcessor 类型 ,BeanDefinitionRegistryPostProcessor 的父类
+		 *
+		 * 通过@Component等注解的BeanFactoryPostProcessor在这里会进行调用
+		 */
 		String[] postProcessorNames =
 				beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);
 
@@ -161,8 +192,16 @@ final class PostProcessorRegistrationDelegate {
 		List<String> orderedPostProcessorNames = new ArrayList<>();
 		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
 		for (String ppName : postProcessorNames) {
+			/**
+			 * 跳过已被处理的.因为在后面也执行了 postProcessBeanFactory 可能会注册进 BeanFactoryPostProcessor,
+			 * 所以这里还有处理逻辑 ques: 会注入definitionRegistry吗？这样无限循环?
+			 *
+			 * ans: 不会的 两个接口传入不同的父类，postProcessBeanFactroy里面调用不到注入definitionRegistry操作
+			 *
+			 */
 			if (processedBeans.contains(ppName)) {
 				// skip - already processed in first phase above
+				// 已经调用过接口方法 跳过
 			}
 			else if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 				priorityOrderedPostProcessors.add(beanFactory.getBean(ppName, BeanFactoryPostProcessor.class));
@@ -179,6 +218,9 @@ final class PostProcessorRegistrationDelegate {
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
 		invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory);
 
+		/**
+		 * 后面就是按顺序执行 BeanFactoryPostProcessor 的 postProcessBeanFactory 方法了
+		 */
 		// Next, invoke the BeanFactoryPostProcessors that implement Ordered.
 		List<BeanFactoryPostProcessor> orderedPostProcessors = new ArrayList<>(orderedPostProcessorNames.size());
 		for (String postProcessorName : orderedPostProcessorNames) {

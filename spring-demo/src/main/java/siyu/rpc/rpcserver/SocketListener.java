@@ -18,13 +18,11 @@ import java.util.concurrent.Executors;
 /**
  * socket监听器 当容器启动或refresh后会自动开始监听
  */
-@Component
-public class SocketListener implements ApplicationListener<ContextRefreshedEvent> {
+public class SocketListener  {
 
-	private final ExecutorService executor = Executors.newCachedThreadPool();
+	private static final ExecutorService executor = Executors.newCachedThreadPool();
 
-	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
+	public static void main(String[] args) {
 
 		ServerSocket serverSocket = null;
 
@@ -36,7 +34,7 @@ public class SocketListener implements ApplicationListener<ContextRefreshedEvent
 				// 等待客户端连接 阻塞性质
 				System.out.println("fuck");
 				Socket socket = serverSocket.accept();
-				executor.submit(new SocketServiceProcessHandler(socket));
+				SocketListener.executor.submit(new SocketServiceProcessHandler(socket));
 
 			}
 
