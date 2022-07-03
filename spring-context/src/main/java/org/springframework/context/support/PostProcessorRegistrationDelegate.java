@@ -256,18 +256,21 @@ final class PostProcessorRegistrationDelegate {
 		// list of all declined PRs involving changes to PostProcessorRegistrationDelegate
 		// to ensure that your proposal does not result in a breaking change:
 		// https://github.com/spring-projects/spring-framework/issues?q=PostProcessorRegistrationDelegate+is%3Aclosed+label%3A%22status%3A+declined%22
-
+		// beanDefinition查询所有beanPostProcessor类 用户定义的也会查出来
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
 		// a bean is created during BeanPostProcessor instantiation, i.e. when
-		// a bean is not eligible for getting processed by all BeanPostProcessors.
+		// a bean is not eligible for getting processed by all BeanPostProcessors. 这里内部的beanPostProcessor + 用户定义的beanPostProcessor
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
+		/**
+		 * BeanPostProcessorChecker用来对在bean不适合所有的BeanPostProcessor调用的情况下，打印一些日志信息
+		 */
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
 		// Separate between BeanPostProcessors that implement PriorityOrdered,
 		// Ordered, and the rest.
-		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
+		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>(); // 这里也有优先顺序
 		List<BeanPostProcessor> internalPostProcessors = new ArrayList<>();
 		List<String> orderedPostProcessorNames = new ArrayList<>();
 		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
@@ -275,6 +278,18 @@ final class PostProcessorRegistrationDelegate {
 			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 				BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
 				priorityOrderedPostProcessors.add(pp);
+				/**
+				 * MergedBanDefinitionPostProcessor
+				 * 回调 postProcessMergedBeanDefinition 方法时，已经拿到了 merged bean definition，并且还未开始 poplateBean 填充 bean 属性、
+				 * initlializeBean 初始化 bean 对象，因此可以在这里对 merged bean definition 进行一些操作，
+				 * 在 poplateBean 或 initlializeBean 阶段使用前面操作结果实现所需功能
+				 *
+				 * AutowiredAnnotationBeanPostProcessor 是 MergedBeanDefinitionPostProcessor 的一个实现类，
+				 * 它可用于完成 Autowire 注解的依赖注入
+				 * AutowiredAnnotationBeanPostProcessor 用于处理 Autowire 等依赖注入注解，它通过 MergedBeanDefinitionPostProcessor 的
+				 * postProcessMergedBeanDefinition 方法回调获取 bean 上的 Autowire 注解，并将相关信息保存到缓存中。
+				 * {@link org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor}
+				 */
 				if (pp instanceof MergedBeanDefinitionPostProcessor) {
 					internalPostProcessors.add(pp);
 				}

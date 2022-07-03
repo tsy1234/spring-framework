@@ -120,6 +120,10 @@ import org.springframework.util.StringUtils;
  * version of {@code getBean(Class, args)} and {@code getBean(String, args)}.
  * See {@link Lookup @Lookup's javadoc} for details.
  *
+ *
+ * AutowiredAnnotationBeanPostProcessor 用于处理 Autowire 等依赖注入注解，它通过 MergedBeanDefinitionPostProcessor 的
+ * postProcessMergedBeanDefinition 方法回调获取 bean 上的 Autowire 注解，并将相关信息保存到缓存中。
+ *
  * @author Juergen Hoeller
  * @author Mark Fisher
  * @author Stephane Nicoll
@@ -255,6 +259,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * annotation 依赖注入：查找 bean 上配置的依赖注入注解配置，并缓存起来
+		 */
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -463,6 +470,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+					/**
+					 * 构建 autowire 的元数据, 包括field和method(Autowire 注解可用于 field（属性）或 method（方法))
+					 */
 					metadata = buildAutowiringMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
@@ -481,8 +491,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			// 处理field
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
+				// 查找field上的autowire注解
 				MergedAnnotation<?> ann = findAutowiredAnnotation(field);
 				if (ann != null) {
 					if (Modifier.isStatic(field.getModifiers())) {
@@ -492,15 +503,18 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						return;
 					}
 					boolean required = determineRequiredStatus(ann);
+					// 构建Autowire元数据
 					currElements.add(new AutowiredFieldElement(field, required));
 				}
 			});
 
+			// 处理method上的注解
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
 					return;
 				}
+				// 查找方法上的autowire注解
 				MergedAnnotation<?> ann = findAutowiredAnnotation(bridgedMethod);
 				if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
 					if (Modifier.isStatic(method.getModifiers())) {
@@ -509,6 +523,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						}
 						return;
 					}
+					// 这里6啊
 					if (method.getParameterCount() == 0) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation should only be used on methods with parameters: " +
@@ -516,7 +531,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						}
 					}
 					boolean required = determineRequiredStatus(ann);
+					// 查找指定方法的 PropertyDescriptor (属性的 get set 方法)
 					PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+					// 构建autowire 元数据
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
 			});
