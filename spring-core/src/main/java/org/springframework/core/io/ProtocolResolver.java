@@ -25,6 +25,9 @@ import org.springframework.lang.Nullable;
  * custom protocols to be handled without subclassing the loader
  * implementation (or application context implementation).
  *
+ * DefaultResourceLoader的SPI接口:允许用户自定义资源加载协议 而不需要继承ResourceLoader的子类
+ * 自定义的resolver通过DefaultResourceLoader#addProtocaolResolver方法加入
+ *
  * @author Juergen Hoeller
  * @since 4.3
  * @see DefaultResourceLoader#addProtocolResolver

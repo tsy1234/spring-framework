@@ -44,8 +44,9 @@ import org.springframework.lang.Nullable;
  */
 public class BeansDtdResolver implements EntityResolver {
 
+	// dtd文件后缀
 	private static final String DTD_EXTENSION = ".dtd";
-
+	// spring bean dtd 的文件名
 	private static final String DTD_NAME = "spring-beans";
 
 	private static final Log logger = LogFactory.getLog(BeansDtdResolver.class);
@@ -68,6 +69,7 @@ public class BeansDtdResolver implements EntityResolver {
 					logger.trace("Trying to locate [" + dtdFile + "] in Spring jar on classpath");
 				}
 				try {
+					// classpath
 					Resource resource = new ClassPathResource(dtdFile, getClass());
 					InputSource source = new InputSource(resource.getInputStream());
 					source.setPublicId(publicId);
@@ -84,7 +86,7 @@ public class BeansDtdResolver implements EntityResolver {
 				}
 			}
 		}
-
+		// 使用默认行为 从网上下载
 		// Fall back to the parser's default behavior.
 		return null;
 	}

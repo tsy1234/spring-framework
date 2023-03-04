@@ -412,7 +412,9 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
+		// 获取bean id
 		String id = ele.getAttribute(ID_ATTRIBUTE);
+		// 没有就是空字符串
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
 		List<String> aliases = new ArrayList<>();
@@ -431,11 +433,13 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		if (containingBean == null) {
+			// 检查beanName的唯一性
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
+			// 如果还是没有定义beanName 生成一个beanName
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {

@@ -129,6 +129,13 @@ public class DefaultDocumentLoader implements DocumentLoader {
 			throws ParserConfigurationException {
 
 		DocumentBuilder docBuilder = factory.newDocumentBuilder();
+		/**
+		 * 设置entityResolver属性 解析器
+		 * 
+		 * EntityResolver 的作用是项目本身就可以提供一个如何寻找 DTD 声明的方法，
+		 * 即由程序来实现寻找 DTD 声明的过程，比如我们将 DTD 文件放到项目中某处，
+		 * 在实现时直接将此文档读取并返回给 SAX 即可。这样 就避免了通过网络来寻找相应的声明。
+		 */
 		if (entityResolver != null) {
 			docBuilder.setEntityResolver(entityResolver);
 		}
