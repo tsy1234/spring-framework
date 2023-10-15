@@ -1,7 +1,11 @@
 pluginManagement {
 	repositories {
-		gradlePluginPortal()
-		maven { url "https://repo.spring.io/plugins-release" }
+		// gradlePluginPortal()
+		// maven { url "https://repo.spring.io/plugins-release" }
+		maven { url 'https://maven.aliyun.com/repository/gradle-plugin' } //gradle-plugin
+		maven { url 'https://maven.aliyun.com/repository/google' } //google
+		maven { url 'https://maven.aliyun.com/repository/public' } //public
+		maven { url 'https://maven.aliyun.com/repository/jcenter'} //jcenter
 	}
 }
 
@@ -54,5 +58,6 @@ settings.gradle.projectsLoaded {
 		}
 	}
 }
+
 include 'spring-demo'
 
